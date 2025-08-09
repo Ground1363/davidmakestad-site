@@ -3,8 +3,15 @@
   {{ $h1 := (findRE "(?m)^#\\s+(.+)" .RawContent) }}
   {{ $auto := cond (gt (len $h1) 0) (replaceRE "(?m)^#\\s+" "" (index $h1 0)) .File.TranslationBaseName }}
   <h1>{{ .Title | default $auto }}</h1>
-  {{ $date := .Date }}{{ if not $date }}{{ $date = .File.ModTime }}{{ end }}
-  {{ if $date }}<div style="opacity:.7; margin-bottom:1rem;"><time datetime="{{ $date }}">{{ time.Format "02-01-2006" $date }}</time></div>{{ end }}
+
+  {{ $d := .Date }}
+  {{ $y := time.Format "2006" $d }}
+  {{ if ne $y "0001" }}
+    <div style="opacity:.7; margin-bottom:1rem;">
+      <time datetime="{{ $d }}">{{ time.Format "02-01-2006" $d }}</time>
+    </div>
+  {{ end }}
+
   <div class="paige-article">
     {{ .Content }}
   </div>
