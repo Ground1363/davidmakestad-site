@@ -1,0 +1,14 @@
+{{ define "main" }}
+<article class="prose max-w-3xl mx-auto">
+  <h1>{{ .Title }}</h1>
+  <p>{{ partial "display-date.html" . }}</p>
+
+  {{ partial "episodeplayer.html" . }}
+
+  {{ with .Params.description }}
+    <div class="mt-4">{{ . | markdownify }}</div>
+  {{ end }}
+
+  {{ partial "comments.html" . }}
+</article>
+{{ end }}

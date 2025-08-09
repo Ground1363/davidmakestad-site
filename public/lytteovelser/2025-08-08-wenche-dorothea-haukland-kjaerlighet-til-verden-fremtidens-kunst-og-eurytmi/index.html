@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="nb">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wenche Dorothea Haukland - Kjærlighet til verden, fremtidens kunst og eurytmi | Lytteøvelser</title>
+</head>
+<body style="font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height:1.5; margin:2rem;">
+  <header style="margin-bottom:2rem;">
+    <nav>
+      <a href="/">Hjem</a> |
+      <a href="/lytteovelser/">Lytteøvelser</a>
+    </nav>
+  </header>
+  <main>
+    
+<article class="prose max-w-3xl mx-auto">
+  <h1>Wenche Dorothea Haukland - Kjærlighet til verden, fremtidens kunst og eurytmi</h1>
+  <p><time datetime="2025-08-08 00:00:00 &#43;0000 UTC">08-08-2025</time>
+</p>
+
+  
+  <iframe src="https://player.rss.com/lytte/1781294" loading="lazy" style="width:100%;height:180px;border:0;overflow:hidden;" title="Wenche Dorothea Haukland - Kjærlighet til verden, fremtidens kunst og eurytmi"></iframe>
+
+
+
+  
+    <div class="mt-4"><p>Wenche Dorothea Haukland forteller levende fra sin oppvekst under 2.verdenskrig, etterkrigstiden, og eventyr til sør-amerika.</p>
+<p>Prosjektet i Brasil: Estância Demétria</p>
+</div>
+  
+
+  
+<div id="nostr-comments" class="comments-wrap">
+  <div id="nocomment-root"></div>
+
+  
+  <details id="nostr-fallback" style="margin-top:1.5rem;">
+    <summary><strong>Kommenter uten konto (engangsnøkkel) eller via Nostr Connect</strong></summary>
+    <div style="margin-top:1rem;">
+      <textarea id="nostr-text" rows="4" style="width:100%;"></textarea>
+      <div style="display:flex; gap:.5rem; align-items:center; margin:.5rem 0;">
+        <button id="nostr-post-local">Send med engangsnøkkel</button>
+        <button id="nostr-connect">Koble til signer (Nostr Connect)</button>
+        <small id="nostr-status" style="opacity:.8;"></small>
+      </div>
+      <div id="nostr-key-info" style="font-size:.9em; opacity:.9;"></div>
+      <details style="margin-top:.5rem;">
+        <summary>Avanserte innstillinger</summary>
+        <label>Relays (komma-separert):
+          <input id="nostr-relays" style="width:100%;" />
+        </label>
+      </details>
+    </div>
+  </details>
+</div>
+
+
+<script
+  src="https://nocomment.fiatjaf.com/embed.js"
+  id="nocomment"
+  data-relays='["wss://relay.damus.io","wss://nostr.wine","wss://nostr.oxtr.dev","wss://nos.lol"]'
+  data-placeholder="Skriv en kommentar (Nostr)"
+></script>
+
+
+<script type="module">
+  import {
+    relayInit,
+    finalizeEvent,
+    generatePrivateKey,
+    getPublicKey,
+    nip19
+  } from "https://esm.sh/nostr-tools@2";
+
+  const DEFAULT_RELAYS = [
+    "wss://relay.damus.io",
+    "wss://nostr.wine",
+    "wss://nostr.oxtr.dev",
+    "wss://nos.lol"
+  ];
+  const THREAD_URL = window.location.href.split("#")[0];
+  const STORAGE_KEY = "lytte-nostr-localkey";
+
+  const $ = (s) => document.querySelector(s);
+  const $status = $("#nostr-status");
+  const $keyinfo = $("#nostr-key-info");
+  const $relays = $("#nostr-relays");
+
+  const hasNip07 = typeof window.nostr !== "undefined";
+  if (hasNip07) {
+    const fb = document.getElementById("nostr-fallback");
+    if (fb) fb.style.display = "none";
+  } else {
+    if ($relays) $relays.value = DEFAULT_RELAYS.join(", ");
+    showLocalKeyInfo();
+  }
+
+  function show(msg) { if ($status) $status.textContent = msg || ""; }
+  function getRelays() {
+    const v = ($relays?.value || "").split(",").map(s => s.trim()).filter(Boolean);
+    return v.length ? v : DEFAULT_RELAYS;
+  }
+  function getOrCreateLocalKey() {
+    let sk = localStorage.getItem(STORAGE_KEY);
+    if (!sk) { sk = generatePrivateKey(); localStorage.setItem(STORAGE_KEY, sk); }
+    return sk;
+  }
+  function clearLocalKey() { localStorage.removeItem(STORAGE_KEY); showLocalKeyInfo(); }
+  function showLocalKeyInfo() {
+    const sk = localStorage.getItem(STORAGE_KEY);
+    if (!sk) {
+      if ($keyinfo) $keyinfo.innerHTML = "Ingen lokal nøkkel lagret. Den blir laget ved sending. (Lokal lagring, kun denne enheten.)";
+    } else {
+      const pk = getPublicKey(sk);
+      const npub = nip19.npubEncode(pk);
+      if ($keyinfo) {
+        $keyinfo.innerHTML = `Lokal nøkkel: <code>${npub.slice(0,16)}…</code> &nbsp;
+          <button type="button" id="nostr-reset-key">Bytt nøkkel</button>`;
+        const resetBtn = document.getElementById("nostr-reset-key");
+        if (resetBtn) resetBtn.onclick = () => { clearLocalKey(); show("Lokal nøkkel nullstilt."); };
+      }
+    }
+  }
+
+  async function publishWithLocalKey(text) {
+    const content = (text || "").trim();
+    if (!content) { show("Tom kommentar."); return; }
+    show("Publiserer …");
+    const sk = getOrCreateLocalKey();
+    const event = {
+      kind: 1,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [["r", THREAD_URL]],
+      content
+    };
+    const signed = finalizeEvent(event, sk);
+    const relays = getRelays();
+    let ok = 0, fail = 0;
+    await Promise.all(relays.map(async (url) => {
+      try {
+        const relay = relayInit(url);
+        await relay.connect();
+        await new Promise((res) => {
+          const pub = relay.publish(signed);
+          pub.on("ok", () => { ok++; relay.close(); res(); });
+          pub.on("failed", () => { fail++; relay.close(); res(); });
+        });
+      } catch { fail++; }
+    }));
+    show(ok ? `Publisert til ${ok} relay(s).` : "Kunne ikke publisere.");
+    refreshNoComment();
+    showLocalKeyInfo();
+  }
+
+  async function publishWithNostrConnect(text) {
+    const content = (text || "").trim();
+    if (!content) { show("Tom kommentar."); return; }
+    show("Kobler til signer …");
+    const { createNostrConnect } = await import("https://esm.sh/nostr-tools@2/nip46");
+    let uri = window.prompt("Lim inn Nostr Connect-URI fra signerapplikasjonen (starter med nostrconnect:)");
+    if (!uri) { show("Avbrutt."); return; }
+    const clientSk = generatePrivateKey();
+    const relays = getRelays();
+    const messagingRelay = relays[0];
+    let connect;
+    try {
+      connect = createNostrConnect({ secretKey: clientSk, target: uri, relay: messagingRelay });
+      await connect.connect();
+    } catch (e) { console.error(e); show("Klarte ikke å etablere Nostr Connect."); return; }
+    const event = { kind: 1, created_at: Math.floor(Date.now()/1000), tags: [["r", THREAD_URL]], content };
+    try {
+      const signed = await connect.signEvent(event);
+      let ok = 0, fail = 0;
+      await Promise.all(relays.map(async (url) => {
+        try {
+          const relay = relayInit(url);
+          await relay.connect();
+          await new Promise((res) => {
+            const pub = relay.publish(signed);
+            pub.on("ok", () => { ok++; relay.close(); res(); });
+            pub.on("failed", () => { fail++; relay.close(); res(); });
+          });
+        } catch { fail++; }
+      }));
+      show(ok ? `Publisert via signer til ${ok} relay(s).` : "Publisering feilet.");
+      refreshNoComment();
+    } catch (e) { console.error(e); show("Signering/publisering feilet."); }
+    finally { try { await connect.close(); } catch {} }
+  }
+
+  function refreshNoComment() {
+    try {
+      const sc = document.getElementById("nocomment");
+      if (sc) {
+        const clone = sc.cloneNode(true);
+        sc.parentNode.replaceChild(clone, sc);
+      }
+    } catch {}
+  }
+
+  const postLocalBtn = document.getElementById("nostr-post-local");
+  if (postLocalBtn) postLocalBtn.onclick = () => publishWithLocalKey(document.getElementById("nostr-text").value);
+  const connectBtn = document.getElementById("nostr-connect");
+  if (connectBtn) connectBtn.onclick = () => publishWithNostrConnect(document.getElementById("nostr-text").value);
+</script>
+
+<style>
+  .comments-wrap { margin-top: 2rem; }
+  #nocomment-root { margin-top: .5rem; }
+  #nostr-text { font: inherit; padding: .5rem; width: 100%; }
+  #nostr-post-local, #nostr-connect {
+    padding: .45rem .7rem; border: 1px solid #ccc; background: #f7f7f7; cursor: pointer;
+  }
+</style>
+
+<noscript>Aktivér JavaScript for å skrive kommentarer.</noscript>
+
+</article>
+
+  </main>
+</body>
+</html>

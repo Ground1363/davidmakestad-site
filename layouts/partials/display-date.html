@@ -1,0 +1,2 @@
+{{- $disp := .Params.display_date -}}
+<time datetime="{{ .Date }}">{{ if $disp }}{{ $disp }}{{ else }}{{ .Date.Format "02-01-2006" }}{{ end }}</time>

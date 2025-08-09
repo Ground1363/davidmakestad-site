@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ block "title" . }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
+</head>
+<body style="font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif; line-height:1.5; margin:2rem;">
+  <header style="margin-bottom:2rem;">
+    <nav>
+      <a href="/">Hjem</a> |
+      <a href="/lytteovelser/">Lytteøvelser</a>
+    </nav>
+  </header>
+  <main>
+    {{ block "main" . }}{{ end }}
+  </main>
+</body>
+</html>

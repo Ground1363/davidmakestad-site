@@ -1,0 +1,9 @@
+baseURL = "http://localhost/"
+title   = "Lytteøvelser"
+languageCode = "nb-no"
+
+[menu]
+  [[menu.main]]
+    name = "Lytteøvelser"
+    url  = "/lytteovelser/"
+    weight = 1

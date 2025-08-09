@@ -1,0 +1,13 @@
+{{ define "main" }}
+<section class="prose max-w-3xl mx-auto">
+  <h1>{{ .Title }}</h1>
+  <ul>
+    {{ range .Pages.ByDate.Reverse }}
+      <li>
+        <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        – {{ partial "display-date.html" . }}
+      </li>
+    {{ end }}
+  </ul>
+</section>
+{{ end }}
