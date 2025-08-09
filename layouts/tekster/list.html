@@ -1,0 +1,26 @@
+{{ define "main" }}
+<section class="paige-container" style="padding:2rem 0;">
+  <h1 style="margin-bottom:1rem;">{{ .Title }}</h1>
+  <div class="paige-grid">
+    {{ range .Pages.ByDate.Reverse }}
+      {{ $h1s := findRE "(?m)^#\\s+(.+)" .RawContent }}
+      {{ $auto := cond (gt (len $h1s) 0) (replaceRE "(?m)^#\\s+" "" (index $h1s 0)) .File.TranslationBaseName }}
+      {{ $title := .Title | default $auto }}
+      {{ $date := .Date }}{{ if not $date }}{{ $date = .File.ModTime }}{{ end }}
+      <article class="paige-card">
+        <div class="paige-card-body">
+          <h2 style="margin:0 0 .25rem 0;font-size:1.1rem;">
+            <a href="{{ .RelPermalink }}" class="paige-link">{{ $title }}</a>
+          </h2>
+          {{ if $date }}
+            <div style="opacity:.7;font-size:.9rem;margin-bottom:.5rem;">
+              <time datetime="{{ $date }}">{{ time.Format "02-01-2006" $date }}</time>
+            </div>
+          {{ end }}
+          {{ with .Summary }}<p style="margin:0;">{{ . | plainify }}</p>{{ end }}
+        </div>
+      </article>
+    {{ end }}
+  </div>
+</section>
+{{ end }}
