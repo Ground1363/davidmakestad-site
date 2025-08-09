@@ -1,9 +1,41 @@
-baseURL = "http://localhost/"
+baseURL = "https://davidmakestad.no/"
 title   = "Lytteøvelser"
 languageCode = "nb-no"
+theme = "paige"
+enableRobotsTXT = true
 
 [menu]
   [[menu.main]]
     name = "Lytteøvelser"
     url  = "/lytteovelser/"
     weight = 1
+  [[menu.main]]
+    name = "Tekster"
+    url  = "/tekster/"
+    weight = 2
+  [[menu.main]]
+    name = "Bilder"
+    url  = "/bilder/"
+    weight = 3
+  [[menu.main]]
+    name = "Arkiv"
+    url  = "/arkiv/"
+    weight = 4
+
+[pagination]
+  pagerSize = 10
+
+[params]
+  colorScheme = "auto"
+  headingFont = "fraunces"
+  logo = "/images/lytteovelser-logo.jpg"
+  ownerName = "David Gudmund Måkestad"
+  heroTagline = "Podkast, tekster og prosjekter om lytting, tilstedeværelse og samtaler som betyr noe."
+  podcastLogo = "/podcast-logo.png"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+podcastLogo = "/lytte-logo.png"
