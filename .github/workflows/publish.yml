@@ -19,6 +19,13 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+      - run: |
+          pwd
+          ls -la
+          echo "CONFIG:"
+          test -f config.toml && sed -n '1,120p' config.toml || echo "config.toml NOT FOUND"
+          echo "TREE (possible capitalized dirs):"
+          git ls-tree -r --name-only HEAD | grep -E '^(Layouts/|Content/|Static/|Themes/)' || true
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
@@ -26,8 +33,14 @@ jobs:
         with:
           hugo-version: '0.148.2'
           extended: true
-      - run: hugo --minify --baseURL "${BASEURL}" -s . -d public
-      - run: ls -la public; echo "---"; ls -la public/tekster || true
+      - run: |
+          hugo version
+          hugo --minify --baseURL "${BASEURL}" -s . -d public -v
+      - run: |
+          echo "PUBLIC DIR:"
+          ls -la public || true
+          echo "---"
+          ls -la public/tekster || true
       - run: test -f public/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
